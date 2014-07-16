@@ -81,7 +81,69 @@ class TOSView: UIView {
 }
 
 
-class MainViewController: UIViewController, CustomViewDelegate {
+protocol ProgressBarDelegate {
+    func timeout()
+}
+class ProgressBar: CALayer {
+    
+    var timer: NSTimer?
+    var time: CGFloat = 10.0
+    var customeDelegate: ProgressBarDelegate?
+    
+    override func drawInContext(ctx: CGContext!)  {
+        var rect = CGRectMake(0.0, 0.0, self.frame.size.width * time / 10.0, self.frame.size.height)
+        CGContextSaveGState(ctx);
+        var path = CGPathCreateWithRect(rect, nil)
+        CGContextAddPath(ctx, path);
+        CGContextClip(ctx);
+        if rect.size.width < 100.0 {
+            CGContextSetFillColorWithColor(ctx, UIColor.redColor().CGColor);
+        }
+        else if rect.size.width < 200 {
+            CGContextSetFillColorWithColor(ctx, UIColor.yellowColor().CGColor);
+        }
+        else {
+            CGContextSetFillColorWithColor(ctx, UIColor.greenColor().CGColor);
+        }
+        CGContextFillRect(ctx, rect);
+        CGContextRestoreGState(ctx);
+        CGPathRelease(path);
+    }
+    
+    func _reset() {
+        time = 10.0
+        self.setNeedsDisplay()
+    }
+    
+    func startTime() {
+        if timer {
+            timer!.invalidate()
+        }
+        time = 10.0
+        timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("_update"), userInfo: nil, repeats: true)
+    }
+    
+    func stopTime() {
+        if timer {
+            timer!.invalidate()
+        }
+        self._reset()
+    }
+    
+    func _update() {
+        time -= 1.0
+        if time < 0 {
+            if timer{
+                timer!.invalidate()
+            }
+            customeDelegate?.timeout()
+        }
+        self.setNeedsDisplay()
+    }
+    
+}
+
+class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDelegate {
     
     var container = TOSContainer()
     var basicView = TOSView()
@@ -91,6 +153,8 @@ class MainViewController: UIViewController, CustomViewDelegate {
     var clearTarget = [[Int]]()
     var shouldMoveIndex = [Int]()
     var score = 0
+    var progressBar = ProgressBar()
+    var timing = false
     
     init(coder aDecoder: NSCoder!) {
         super.init(coder:aDecoder)
@@ -101,10 +165,19 @@ class MainViewController: UIViewController, CustomViewDelegate {
     override func loadView() {
         super.loadView()
         self.view.backgroundColor = UIColor.brownColor()
+        
+
+        
         basicView.frame = CGRectMake(0.0, self.view.frame.size.height - CGFloat(320.0 / 6.0 * 5.0), CGFloat(320.0 / 6.0 * 6.0), CGFloat(320.0 / 6.0 * 5.0))
         basicView.backgroundColor = UIColor.blackColor()
         self.view.addSubview(basicView)
         basicView.setNeedsDisplay()
+
+        progressBar.frame = CGRectMake(0.0, CGRectGetMinY(basicView.frame) - 44.0, self.view.frame.size.width, 44.0)
+        progressBar.customeDelegate = self
+        progressBar.backgroundColor = UIColor.blackColor().CGColor
+        self.view.layer.addSublayer(progressBar)
+        self.progressBar.setNeedsDisplay()
         
         self._setCricle()
     }
@@ -360,6 +433,13 @@ class MainViewController: UIViewController, CustomViewDelegate {
         }
     }
     func didCancel() {
+        if !timing {
+            return
+        }
+        else {
+            timing = false
+            progressBar.stopTime()
+        }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         moveLayer.removeFromSuperlayer()
@@ -371,6 +451,7 @@ class MainViewController: UIViewController, CustomViewDelegate {
     }
     
     func didMove(touchPoint inTouchPoint: CGPoint) {
+        
         var x = inTouchPoint.x - startTouchPoint!.x
         var y = inTouchPoint.y - startTouchPoint!.y
         CATransaction.begin()
@@ -392,7 +473,10 @@ class MainViewController: UIViewController, CustomViewDelegate {
     
     // change circle
     func _changeTargetCell(targetIndex: Int) {
-        
+        if !timing {
+            timing = true
+            progressBar.startTime()
+        }
         container.cells[startMoveIndex].layer!.frame = CGRectMake(container.cells[targetIndex].startPoint!.x, container.cells[targetIndex].startPoint!.y, container.cells[startMoveIndex].layer!.frame.size.width, container.cells[startMoveIndex].layer!.frame.size.height)
         container.cells[targetIndex].layer!.frame = CGRectMake(container.cells[startMoveIndex].startPoint!.x, container.cells[startMoveIndex].startPoint!.y, container.cells[targetIndex].layer!.frame.size.width, container.cells[targetIndex].layer!.frame.size.height)
         
@@ -404,6 +488,11 @@ class MainViewController: UIViewController, CustomViewDelegate {
         container.cells[targetIndex].layer = tempStartLayer
         container.cells[targetIndex].color = tempStartColor
         startMoveIndex = targetIndex
+    }
+    
+    // progress delegate
+    func timeout() {
+        self.didCancel()
     }
     
     // randomColor
