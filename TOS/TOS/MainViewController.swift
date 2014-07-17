@@ -118,6 +118,7 @@ class ProgressBar: CALayer {
     func startTime() {
         if timer {
             timer!.invalidate()
+            timer = nil
         }
         time = 10.0
         timer = NSTimer.scheduledTimerWithTimeInterval(1.0, target: self, selector: Selector("_update"), userInfo: nil, repeats: true)
@@ -126,6 +127,7 @@ class ProgressBar: CALayer {
     func stopTime() {
         if timer {
             timer!.invalidate()
+            timer = nil
         }
         self._reset()
     }
@@ -145,7 +147,7 @@ class ProgressBar: CALayer {
 
 class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDelegate {
     
-    var container = TOSContainer()
+    var container: TOSContainer!
     var basicView = TOSView()
     var moveLayer: CAShapeLayer!
     var startTouchPoint: CGPoint?
@@ -155,9 +157,17 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     var score = 0
     var progressBar = ProgressBar()
     var timing = false
+    var timerLabel = UILabel()
+    var maskView = UIView()
+    var startButton: UIButton! = UIButton.buttonWithType(UIButtonType.System) as UIButton
+    var gameTimer: NSTimer?
+    var currentTime = 0
+    var scoreLabel = UILabel()
     
     init(coder aDecoder: NSCoder!) {
         super.init(coder:aDecoder)
+        
+        container = TOSContainer()
         container.initWithData(row: 5, column: 6, containerSize: 320.0 / 6.0)
         basicView.customDelegate = self
     }
@@ -166,7 +176,18 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         super.loadView()
         self.view.backgroundColor = UIColor.brownColor()
         
-
+        
+        timerLabel.frame = CGRectMake(0.0, 30.0, self.view.frame.size.width, 30.0)
+        timerLabel.backgroundColor = UIColor.whiteColor()
+        timerLabel.text = "spend time : 0"
+        timerLabel.textAlignment = NSTextAlignment.Center
+        self.view.addSubview(timerLabel)
+        
+        scoreLabel.frame = CGRectMake(0.0, 100.0, self.view.frame.size.width, 30.0)
+        scoreLabel.backgroundColor = UIColor.grayColor()
+        scoreLabel.text = "now score : 0"
+        scoreLabel.textAlignment = NSTextAlignment.Center
+        self.view.addSubview(scoreLabel)
         
         basicView.frame = CGRectMake(0.0, self.view.frame.size.height - CGFloat(320.0 / 6.0 * 5.0), CGFloat(320.0 / 6.0 * 6.0), CGFloat(320.0 / 6.0 * 5.0))
         basicView.backgroundColor = UIColor.blackColor()
@@ -180,6 +201,53 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         self.progressBar.setNeedsDisplay()
         
         self._setCricle()
+        
+        maskView.frame = CGRectMake(0.0, 0.0, self.view.frame.size.width, self.view.frame.size.height)
+        maskView.backgroundColor = UIColor.blackColor()
+        maskView.alpha = 0.7
+        self.view.addSubview(maskView)
+        
+        startButton.frame = CGRectMake(0.0, (self.view.frame.size.height - 44.0) / 2.0, self.view.frame.size.width, 44.0)
+        startButton.backgroundColor = UIColor.whiteColor()
+        startButton.setTitle("Start", forState: UIControlState.Normal)
+        startButton.titleLabel.font = UIFont.boldSystemFontOfSize(20.0)
+        startButton.addTarget(self, action: Selector("_gameStart"), forControlEvents: UIControlEvents.TouchUpInside)
+        self.view.addSubview(startButton)
+    }
+    
+    func _gameStart() {
+        startButton.hidden = true
+        maskView.hidden = true
+        score = 0
+        currentTime = 0
+        scoreLabel.text = "now score : 0"
+        timerLabel.text = "spend time : 0"
+        if gameTimer {
+            gameTimer!.invalidate()
+            gameTimer = nil
+        }
+        gameTimer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: Selector("_updateTimer"), userInfo: nil, repeats: true)
+    }
+    
+    func _reStart() {
+        for index in 0..<container.cells.count {
+            if container.cells[index].layer {
+                container.cells[index].layer!.removeFromSuperlayer()
+            }
+        }
+        if container {
+            container = nil
+        }
+        container = TOSContainer()
+        container.initWithData(row: 5, column: 6, containerSize: 320.0 / 6.0)
+        self._setCricle()
+        self._gameStart()
+    }
+    
+    
+    func _updateTimer() {
+        currentTime += 1
+        timerLabel.text = "spend time : \(currentTime)"
     }
     
     func _setCricle() {
@@ -230,17 +298,29 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         
         if clearTarget.count == 0 {
             UIApplication.sharedApplication().endIgnoringInteractionEvents()
-            println("\(score)")
+            if score >= 100 {
+                startButton.removeTarget(self, action: Selector("_gameStart"), forControlEvents: UIControlEvents.TouchUpInside)
+                startButton.addTarget(self, action: Selector("_reStart"), forControlEvents: UIControlEvents.TouchUpInside)
+                startButton.hidden = false
+            }
             return
         }
         
         var delayToClear = 0.0 * Double(NSEC_PER_SEC)
         var delayToClearTime = dispatch_time(DISPATCH_TIME_NOW, Int64(delayToClear))
         for clearIndexs in clearTarget {
-            score += clearIndexs.count
             delayToClear += 0.5 * Double(NSEC_PER_SEC)
             delayToClearTime = dispatch_time(DISPATCH_TIME_NOW, Int64(delayToClear))
             dispatch_after(delayToClearTime, dispatch_get_main_queue(), {
+                self.score += clearIndexs.count
+                if self.score >= 100 {
+                    self.maskView.hidden = false
+                    if self.gameTimer {
+                        self.gameTimer!.invalidate()
+                        self.gameTimer = nil
+                    }
+                }
+                self.scoreLabel.text = "now score : \(self.score)"
                 for clearIndex in clearIndexs {
                     if self.container.cells[clearIndex].layer {
                         self.container.cells[clearIndex].layer!.opacity = 0.0
@@ -253,7 +333,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         }
 
         clearTarget.removeAll(keepCapacity: false)
-        println("\(delayToClear)")
+
         var delayToReset = delayToClear + 0.5 * Double(NSEC_PER_SEC)
         var delayToResetTime = dispatch_time(DISPATCH_TIME_NOW, Int64(delayToReset))
         dispatch_after(delayToClearTime, dispatch_get_main_queue(), {
