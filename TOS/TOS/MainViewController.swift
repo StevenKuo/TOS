@@ -107,7 +107,6 @@ class ProgressBar: CALayer {
         }
         CGContextFillRect(ctx, rect);
         CGContextRestoreGState(ctx);
-        CGPathRelease(path);
     }
     
     func _reset() {
