@@ -10,29 +10,29 @@
 	<string>TOS</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
-		<key>1EC1C1BC-8C1A-408D-A913-E51EEA59DACC</key>
+		<key>B5387D7392F36BFD11D6A40D3165574B1F5AECD6</key>
 		<string>ssh://github.com/StevenKuo/TOS.git</string>
 	</dict>
 	<key>IDESourceControlProjectPath</key>
 	<string>TOS/TOS.xcodeproj/project.xcworkspace</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
-		<key>1EC1C1BC-8C1A-408D-A913-E51EEA59DACC</key>
+		<key>B5387D7392F36BFD11D6A40D3165574B1F5AECD6</key>
 		<string>../../..</string>
 	</dict>
 	<key>IDESourceControlProjectURL</key>
 	<string>ssh://github.com/StevenKuo/TOS.git</string>
 	<key>IDESourceControlProjectVersion</key>
-	<integer>110</integer>
+	<integer>111</integer>
 	<key>IDESourceControlProjectWCCIdentifier</key>
-	<string>1EC1C1BC-8C1A-408D-A913-E51EEA59DACC</string>
+	<string>B5387D7392F36BFD11D6A40D3165574B1F5AECD6</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>
 			<key>IDESourceControlWCCIdentifierKey</key>
-			<string>1EC1C1BC-8C1A-408D-A913-E51EEA59DACC</string>
+			<string>B5387D7392F36BFD11D6A40D3165574B1F5AECD6</string>
 			<key>IDESourceControlWCCName</key>
 			<string>TOS</string>
 		</dict>

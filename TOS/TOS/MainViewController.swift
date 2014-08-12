@@ -115,7 +115,7 @@ class ProgressBar: CALayer {
     }
     
     func startTime() {
-        if timer {
+        if (timer != nil) {
             timer!.invalidate()
             timer = nil
         }
@@ -124,7 +124,7 @@ class ProgressBar: CALayer {
     }
     
     func stopTime() {
-        if timer {
+        if (timer != nil) {
             timer!.invalidate()
             timer = nil
         }
@@ -134,7 +134,7 @@ class ProgressBar: CALayer {
     func _update() {
         time -= 1.0
         if time < 0 {
-            if timer{
+            if (timer != nil){
                 timer!.invalidate()
             }
             customeDelegate?.timeout()
@@ -163,7 +163,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     var currentTime = 0
     var scoreLabel = UILabel()
     
-    init(coder aDecoder: NSCoder!) {
+    required init(coder aDecoder: NSCoder!) {
         super.init(coder:aDecoder)
         
         container = TOSContainer()
@@ -221,7 +221,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         currentTime = 0
         scoreLabel.text = "now score : 0"
         timerLabel.text = "spend time : 0"
-        if gameTimer {
+        if (gameTimer != nil) {
             gameTimer!.invalidate()
             gameTimer = nil
         }
@@ -230,7 +230,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     
     func _reStart() {
         for index in 0..<container.cells.count {
-            if container.cells[index].layer {
+            if (container.cells[index].layer != nil) {
                 container.cells[index].layer!.removeFromSuperlayer()
             }
         }
@@ -273,19 +273,19 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         
         for index in 0..<container.cells.count {
             if container.cells[index].color == UIColor.redColor() {
-                allRedCircle += index
+                allRedCircle.append(index)
             }
             if container.cells[index].color == UIColor.blueColor() {
-                allBlueCircle += index
+                allBlueCircle.append(index)
             }
             if container.cells[index].color == UIColor.yellowColor() {
-                allYellowCircle += index
+                allYellowCircle.append(index)
             }
             if container.cells[index].color == UIColor.purpleColor() {
-                allPurpleCircle += index
+                allPurpleCircle.append(index)
             }
             if container.cells[index].color == UIColor.greenColor() {
-                allGreenCircle += index
+                allGreenCircle.append(index)
             }
         }
         
@@ -314,14 +314,14 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                 self.score += clearIndexs.count
                 if self.score >= 100 {
                     self.maskView.hidden = false
-                    if self.gameTimer {
+                    if (self.gameTimer != nil) {
                         self.gameTimer!.invalidate()
                         self.gameTimer = nil
                     }
                 }
                 self.scoreLabel.text = "now score : \(self.score)"
                 for clearIndex in clearIndexs {
-                    if self.container.cells[clearIndex].layer {
+                    if (self.container.cells[clearIndex].layer != nil) {
                         self.container.cells[clearIndex].layer!.opacity = 0.0
                         self.container.cells[clearIndex].layer!.removeFromSuperlayer()
                         self.container.cells[clearIndex].layer = nil
@@ -364,8 +364,8 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     // add new circle
     func _addNewCircle() {
         for index in 0..<container.cells.count {
-            if !container.cells[index].layer {
-                shouldMoveIndex += index
+            if (container.cells[index].layer == nil) {
+                shouldMoveIndex.append(index)
                 let color = self.randomColor()
                 var layer = CALayer()
                 layer.frame = CGRectMake(self.container.cells[index].startPoint!.x, -500.0, 320.0 / 6.0, 320.0 / 6.0)
@@ -387,10 +387,10 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         while lastIndex > 0 {
             var toIndex = lastIndex - 6
             for index in toIndex..<lastIndex {
-                if !container.cells[index].layer {
+                if (container.cells[index].layer == nil) {
                     var findLayerExistIndex = index - 6
                     while findLayerExistIndex >= 0 {
-                        if container.cells[findLayerExistIndex].layer {
+                        if (container.cells[findLayerExistIndex].layer != nil) {
                             container.cells[findLayerExistIndex].layer!.frame = CGRectMake(container.cells[index].startPoint!.x, container.cells[index].startPoint!.y, container.cells[findLayerExistIndex].layer!.frame.size.width, container.cells[findLayerExistIndex].layer!.frame.size.width)
                             var tempLayer: CALayer? = container.cells[findLayerExistIndex].layer
                             var tempColor: UIColor? = container.cells[findLayerExistIndex].color
@@ -416,7 +416,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
             var linkCount = 0
             var checkIndex = startIndex - 1
             var shouldClearIndex = [Int]()
-            shouldClearIndex += startIndex
+            shouldClearIndex.append(startIndex)
             
             while true {
                 if checkIndex < 0 || checkIndex < rowLimitIndex {
@@ -427,7 +427,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                 }
                 var bingo = contains(colorCircle, checkIndex)
                 if bingo {
-                    shouldClearIndex += checkIndex
+                    shouldClearIndex.append(checkIndex)
                     linkCount += 1
                     checkIndex -= 1
                 }
@@ -446,7 +446,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
             var bingoCount = 0
             var checkIndex = startIndex - 6
             var shouldClearIndex = [Int]()
-            shouldClearIndex += startIndex
+            shouldClearIndex.append(startIndex)
             
             while true {
                 if checkIndex < 0 {
@@ -457,7 +457,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                 }
                 var bingo = contains(colorCircle, checkIndex)
                 if bingo {
-                    shouldClearIndex += checkIndex
+                    shouldClearIndex.append(checkIndex)
                     bingoCount += 1
                     checkIndex -= 6
                 }
@@ -480,7 +480,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                     if contains(clearTarget[index], clearIndex) {
                         for addIndex in clears {
                             if !contains(clearTarget[index], addIndex) {
-                                clearTarget[index] += addIndex
+                                clearTarget[index].append(addIndex)
                             }
                         }
                         return
@@ -488,7 +488,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                 }
             }
         }
-        clearTarget += clears
+        clearTarget.append(clears)
     }
     
     // touch delegate
