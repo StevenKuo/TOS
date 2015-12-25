@@ -18,10 +18,10 @@ struct ContainerCell {
 
 class TOSContainer{
     var cells = [ContainerCell]()
-    func initWithData(#row: Int, column: Int, containerSize: Float) {
+    func initWithData(row row: Int, column: Int, containerSize: Float) {
         for rowIndex in 0..<row {
             for columnIndex in 0..<column {
-                var cell = ContainerCell(layer: nil, color: nil, startPoint: CGPointMake(CGFloat(containerSize * Float(columnIndex)), CGFloat(containerSize * Float(rowIndex))))
+                let cell = ContainerCell(layer: nil, color: nil, startPoint: CGPointMake(CGFloat(containerSize * Float(columnIndex)), CGFloat(containerSize * Float(rowIndex))))
                 cells.append(cell)
             }
         }
@@ -40,8 +40,8 @@ class TOSView: UIView {
     var customDelegate: CustomViewDelegate?
     
     override func drawRect(rect: CGRect) {
-        var context = UIGraphicsGetCurrentContext()
-        var path = CGPathCreateMutable()
+        let context = UIGraphicsGetCurrentContext()
+        let path = CGPathCreateMutable()
         for columnIndex in 0..<5 {
             CGPathMoveToPoint(path, nil, 0.0, CGFloat(Float(columnIndex) * (320.0 / 6.0)));
             CGPathAddLineToPoint(path, nil, self.frame.size.width, CGFloat(Float(columnIndex) * (320.0 / 6.0)))
@@ -57,25 +57,24 @@ class TOSView: UIView {
         CGContextStrokePath(context)
     }
     
-    override func touchesBegan(touches: NSSet!, withEvent event: UIEvent!) {
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         super.touchesBegan(touches, withEvent: event)
-        let touch : UITouch = touches.anyObject() as UITouch
+        let touch : UITouch = touches.first!
         let touchPoint = touch.locationInView(self)
         customDelegate?.didSelect(touchPoint: touchPoint)
     }
-    
-    override func touchesMoved(touches: NSSet!, withEvent event: UIEvent!) {
-        let touch : UITouch = touches.anyObject() as UITouch
+    override func touchesMoved(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        super.touchesMoved(touches, withEvent: event)
+        let touch : UITouch = touches.first!
         let touchPoint = touch.locationInView(self)
         customDelegate?.didMove(touchPoint: touchPoint)
     }
-    
-    override func touchesCancelled(touches: NSSet!, withEvent event: UIEvent!) {
-        super.touchesBegan(touches, withEvent: event)
+    override func touchesCancelled(touches: Set<UITouch>?, withEvent event: UIEvent?) {
+        super.touchesCancelled(touches, withEvent: event)
         customDelegate?.didCancel()
     }
-    override func touchesEnded(touches: NSSet!, withEvent event: UIEvent!) {
-        super.touchesBegan(touches, withEvent: event)
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        super.touchesEnded(touches, withEvent: event)
         customDelegate?.didCancel()
     }
 }
@@ -90,10 +89,10 @@ class ProgressBar: CALayer {
     var time: CGFloat = 10.0
     var customeDelegate: ProgressBarDelegate?
     
-    override func drawInContext(ctx: CGContext!)  {
-        var rect = CGRectMake(0.0, 0.0, self.frame.size.width * time / 10.0, self.frame.size.height)
+    override func drawInContext(ctx: CGContext)  {
+        let rect = CGRectMake(0.0, 0.0, self.frame.size.width * time / 10.0, self.frame.size.height)
         CGContextSaveGState(ctx);
-        var path = CGPathCreateWithRect(rect, nil)
+        let path = CGPathCreateWithRect(rect, nil)
         CGContextAddPath(ctx, path);
         CGContextClip(ctx);
         if rect.size.width < 100.0 {
@@ -158,12 +157,12 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     var timing = false
     var timerLabel = UILabel()
     var maskView = UIView()
-    var startButton: UIButton! = UIButton.buttonWithType(UIButtonType.System) as UIButton
+    var startButton = UIButton(type: UIButtonType.System)
     var gameTimer: NSTimer?
     var currentTime = 0
     var scoreLabel = UILabel()
     
-    required init(coder aDecoder: NSCoder!) {
+    required init?(coder aDecoder: NSCoder) {
         super.init(coder:aDecoder)
         
         container = TOSContainer()
@@ -209,7 +208,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         startButton.frame = CGRectMake(0.0, (self.view.frame.size.height - 44.0) / 2.0, self.view.frame.size.width, 44.0)
         startButton.backgroundColor = UIColor.whiteColor()
         startButton.setTitle("Start", forState: UIControlState.Normal)
-        startButton.titleLabel.font = UIFont.boldSystemFontOfSize(20.0)
+        startButton.titleLabel!.font = UIFont.boldSystemFontOfSize(20.0)
         startButton.addTarget(self, action: Selector("_gameStart"), forControlEvents: UIControlEvents.TouchUpInside)
         self.view.addSubview(startButton)
     }
@@ -234,7 +233,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                 container.cells[index].layer!.removeFromSuperlayer()
             }
         }
-        if container {
+        if (container != nil) {
             container = nil
         }
         container = TOSContainer()
@@ -252,7 +251,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     func _setCricle() {
         for index in 0..<container.cells.count {
             let color = self.randomColor()
-            var layer = CALayer()
+            let layer = CALayer()
             layer.frame = CGRectMake(container.cells[index].startPoint!.x, container.cells[index].startPoint!.y, 320.0 / 6.0, 320.0 / 6.0)
             layer.masksToBounds = true
             layer.cornerRadius = 25.0
@@ -333,8 +332,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
 
         clearTarget.removeAll(keepCapacity: false)
 
-        var delayToReset = delayToClear + 0.5 * Double(NSEC_PER_SEC)
-        var delayToResetTime = dispatch_time(DISPATCH_TIME_NOW, Int64(delayToReset))
+        let delayToReset = delayToClear + 0.5 * Double(NSEC_PER_SEC)
         dispatch_after(delayToClearTime, dispatch_get_main_queue(), {
             self._resetAllCirclePosition()
         })
@@ -367,7 +365,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
             if (container.cells[index].layer == nil) {
                 shouldMoveIndex.append(index)
                 let color = self.randomColor()
-                var layer = CALayer()
+                let layer = CALayer()
                 layer.frame = CGRectMake(self.container.cells[index].startPoint!.x, -500.0, 320.0 / 6.0, 320.0 / 6.0)
                 layer.masksToBounds = true
                 layer.cornerRadius = 25.0
@@ -385,15 +383,15 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     func _resetAllCirclePosition() {
         var lastIndex = container.cells.count
         while lastIndex > 0 {
-            var toIndex = lastIndex - 6
+            let toIndex = lastIndex - 6
             for index in toIndex..<lastIndex {
                 if (container.cells[index].layer == nil) {
                     var findLayerExistIndex = index - 6
                     while findLayerExistIndex >= 0 {
                         if (container.cells[findLayerExistIndex].layer != nil) {
                             container.cells[findLayerExistIndex].layer!.frame = CGRectMake(container.cells[index].startPoint!.x, container.cells[index].startPoint!.y, container.cells[findLayerExistIndex].layer!.frame.size.width, container.cells[findLayerExistIndex].layer!.frame.size.width)
-                            var tempLayer: CALayer? = container.cells[findLayerExistIndex].layer
-                            var tempColor: UIColor? = container.cells[findLayerExistIndex].color
+                            let tempLayer: CALayer? = container.cells[findLayerExistIndex].layer
+                            let tempColor: UIColor? = container.cells[findLayerExistIndex].color
                             container.cells[index].layer = tempLayer
                             container.cells[index].color = tempColor
                             container.cells[findLayerExistIndex].layer = nil
@@ -425,7 +423,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                     }
                     break
                 }
-                var bingo = contains(colorCircle, checkIndex)
+                let bingo = colorCircle.contains(checkIndex)
                 if bingo {
                     shouldClearIndex.append(checkIndex)
                     linkCount += 1
@@ -455,7 +453,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
                     }
                     break
                 }
-                var bingo = contains(colorCircle, checkIndex)
+                let bingo = colorCircle.contains(checkIndex)
                 if bingo {
                     shouldClearIndex.append(checkIndex)
                     bingoCount += 1
@@ -477,9 +475,9 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         if clearTarget.count > 0 {
             for index in 0..<clearTarget.count {
                 for clearIndex in clears {
-                    if contains(clearTarget[index], clearIndex) {
+                    if clearTarget[index].contains(clearIndex) {
                         for addIndex in clears {
-                            if !contains(clearTarget[index], addIndex) {
+                            if !clearTarget[index].contains(addIndex) {
                                 clearTarget[index].append(addIndex)
                             }
                         }
@@ -495,7 +493,7 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     func didSelect(touchPoint inTouchPoint: CGPoint) {
         startTouchPoint = inTouchPoint
         for index in 0..<container.cells.count {
-            var cell = container.cells[index]
+            let cell = container.cells[index]
             if inTouchPoint.x > cell.startPoint!.x && inTouchPoint.x < cell.startPoint!.x + 320.0 / 6.0 && inTouchPoint.y > cell.startPoint!.y && inTouchPoint.y < cell.startPoint!.y + 320.0 / 6.0 {
                 startMoveIndex = index
                 CATransaction.begin()
@@ -531,15 +529,15 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
     
     func didMove(touchPoint inTouchPoint: CGPoint) {
         
-        var x = inTouchPoint.x - startTouchPoint!.x
-        var y = inTouchPoint.y - startTouchPoint!.y
+        let x = inTouchPoint.x - startTouchPoint!.x
+        let y = inTouchPoint.y - startTouchPoint!.y
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         moveLayer.frame = CGRectMake(x, y, moveLayer.frame.size.width, moveLayer.frame.size.height)
         CATransaction.commit()
         
         for index in 0..<container.cells.count {
-            var cell = container.cells[index]
+            let cell = container.cells[index]
             if inTouchPoint.x > cell.startPoint!.x && inTouchPoint.x < cell.startPoint!.x + 320.0 / 6.0 && inTouchPoint.y > cell.startPoint!.y && inTouchPoint.y < cell.startPoint!.y + 320.0 / 6.0 {
                 if index != startMoveIndex {
                     self._changeTargetCell(index)
@@ -560,8 +558,8 @@ class MainViewController: UIViewController, CustomViewDelegate, ProgressBarDeleg
         container.cells[targetIndex].layer!.frame = CGRectMake(container.cells[startMoveIndex].startPoint!.x, container.cells[startMoveIndex].startPoint!.y, container.cells[targetIndex].layer!.frame.size.width, container.cells[targetIndex].layer!.frame.size.height)
         
         
-        var tempStartLayer = container.cells[startMoveIndex].layer
-        var tempStartColor = container.cells[startMoveIndex].color
+        let tempStartLayer = container.cells[startMoveIndex].layer
+        let tempStartColor = container.cells[startMoveIndex].color
         container.cells[startMoveIndex].layer = container.cells[targetIndex].layer
         container.cells[startMoveIndex].color = container.cells[targetIndex].color
         container.cells[targetIndex].layer = tempStartLayer

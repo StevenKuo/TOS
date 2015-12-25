@@ -157,6 +157,8 @@
 		B0D0AAEB196645770031546D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftMigration = 0720;
+				LastSwiftUpdateCheck = 0720;
 				LastUpgradeCheck = 0600;
 				ORGANIZATIONNAME = steven;
 				TargetAttributes = {
@@ -389,6 +391,7 @@
 				B0D0AB0C196645770031546D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		B0D0AB0D196645770031546D /* Build configuration list for PBXNativeTarget "TOSTests" */ = {
 			isa = XCConfigurationList;
@@ -397,6 +400,7 @@
 				B0D0AB0F196645770031546D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
